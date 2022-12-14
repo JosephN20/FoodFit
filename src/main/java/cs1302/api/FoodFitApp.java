@@ -47,7 +47,7 @@ public class FoodFitApp extends Application {
 
     private static final String CALORIE_API = "https://fitness-calculator.p.rapidapi.com/dailycalorie";
     private static final String RECIPE_API = "https://spoonacular-recipe-food-nutrition-v1.p.rapidapi.com/recipes/findByNutrients";
-    private static final String configPath = "resources/config.properties";
+    private static final String CONFIGPATH = "resources/config.properties";
     String recipeKey;
     String fitnessKey;
 
@@ -66,7 +66,7 @@ public class FoodFitApp extends Application {
     private HBox layer1;
     private HBox layer2;
     private HBox layer3;
-    private HBox layer4; 
+    private HBox layer4;
     private HBox layer5;
     private HBox layer6;
     private TextField ageBox;
@@ -115,12 +115,12 @@ public class FoodFitApp extends Application {
         } // for
         recipeList = new String[9];
         recipeImage = new String[9];
-        label1 = new Label("Enter your age, height, weight, gender, activity level, and your goal.");
+        label1 = new Label("Enter your age, height,weight, gender, activity level, and goal.");
         label2 = new Label("FoodFitApp provided by Spoonacular API and Fitness Calculator API");
         progressBar = new ProgressBar();
 
         // Setting API keys
-        try (FileInputStream configFileStream = new FileInputStream(configPath)) {
+        try (FileInputStream configFileStream = new FileInputStream(CONFIGPATH)) {
             Properties config = new Properties();
             config.load(configFileStream);
             recipeKey = config.getProperty("recipe.key");
@@ -147,15 +147,19 @@ public class FoodFitApp extends Application {
 
         goal.getItems().addAll("Maintain", "Gain", "Loss");
         goal.setValue("Pick Goal");
-       
+
         // Layers
         vbox.getChildren().addAll(layer1, layer2, label1, layer3, layer4,layer5,layer6);
         layer1.getChildren().addAll(ageBox, heightBox, weightBox);
         layer2.getChildren().addAll(genderBox, activityLevel, goal, searchButton);
-        layer3.getChildren().addAll(imgViews[0], textFlows[0], imgViews[1], textFlows[1], imgViews[2], textFlows[2]);
-        layer4.getChildren().addAll(imgViews[3], textFlows[3], imgViews[4], textFlows[4], imgViews[5], textFlows[5]);
-        layer5.getChildren().addAll(imgViews[6], textFlows[6], imgViews[7], textFlows[7], imgViews[8], textFlows[8]);
+        layer3.getChildren().addAll(imgViews[0], textFlows[0], imgViews[1]);
+        layer3.getChildren().addAll( textFlows[1], imgViews[2], textFlows[2]);
+        layer4.getChildren().addAll(imgViews[3], textFlows[3], imgViews[4]);
+        layer4.getChildren().addAll( textFlows[4], imgViews[5], textFlows[5]);
+        layer5.getChildren().addAll(imgViews[6], textFlows[6], imgViews[7]);
+        layer5.getChildren().addAll(textFlows[7], imgViews[8], textFlows[8]);
         layer6.getChildren().addAll(progressBar, label2);
+
 
         layer3.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-border-style: solid;");
         layer4.setStyle("-fx-border-color: black; -fx-border-width: 1; -fx-border-style: solid;");
@@ -175,34 +179,35 @@ public class FoodFitApp extends Application {
         activityLevel.setPrefWidth(225);
         goal.setPrefWidth(225);
         searchButton.setPrefWidth(225);
-        
+
     } // init
 
     /**
      * {@inheritDoc}}
      */
     @Override
-    public void start(Stage stage) {        
+    public void start(Stage stage) {
 
-        Scene scene = new Scene(vbox);
+        this.stage = stage;
+        this.scene = new Scene(vbox);
 
-        stage.setScene(scene);
-        stage.setTitle("Wellness App");
-        stage.sizeToScene();
-        stage.show();
-        stage.setWidth(900);
-        stage.setHeight(820);
-        stage.setResizable(false);
+        this.stage.setScene(scene);
+        this.stage.setTitle("Wellness App");
+        this.stage.sizeToScene();
+        this.stage.show();
+        this.stage.setWidth(900);
+        this.stage.setHeight(820);
         setScene();
-        
+        Platform.runLater(() -> this.stage.setResizable(false));
+
         EventHandler<ActionEvent> handler = event ->  search();
-            searchButton.setOnAction(e -> runNow(() -> {
+        searchButton.setOnAction(e -> runNow(() -> {
             search();
-            }));
+        }));
 
     } // start
 
-    /** 
+    /**
      * Method that gathers all the methods that are used.
      */
     public void search() {
@@ -225,24 +230,25 @@ public class FoodFitApp extends Application {
      * to return a String for calories based
      * on the goals that the user selects given the user
      * information.
-     * @return calorieResponse.data.goals.maintainWeight
-     * @return calorieResponse.data.goals.mildWeightGain.calory
-     * @return calorieResponse.data.goals.mildWeightLoss.calory
+     * @return calory
      */
     public String getCalorie() {
         try {
             String age = URLEncoder.encode(ageBox.getText(), StandardCharsets.UTF_8);
-            String gender = URLEncoder.encode(genderBox.getValue().toString().toLowerCase(), StandardCharsets.UTF_8);
+            String gender = URLEncoder.encode(genderBox.getValue().toString().toLowerCase(),
+                StandardCharsets.UTF_8);
             String height = URLEncoder.encode(heightBox.getText(), StandardCharsets.UTF_8);
             String weight = URLEncoder.encode(weightBox.getText(), StandardCharsets.UTF_8);
-            String activity = URLEncoder.encode(activityLevel.getValue().toString(), StandardCharsets.UTF_8);
-            String query = String.format("?age=%s&gender=%s&height=%s&weight=%s&activitylevel=level_%s", age, gender, height, weight, activity);
+            String activity = URLEncoder.encode("level_" + activityLevel.getValue().toString(),
+                StandardCharsets.UTF_8);
+            String query = String.format("?age=%s&gender=%s&height=%s&weight=%s&activitylevel=%s"
+                , age, gender, height, weight, activity);
             uri = CALORIE_API + query;
             HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(uri))
-            .header("X-RapidAPI-Key", fitnessKey)
-            .header("X-RapidAPI-Host", "fitness-calculator.p.rapidapi.com")
-            .build();
+                .uri(URI.create(uri))
+                .header("X-RapidAPI-Key", fitnessKey)
+                .header("X-RapidAPI-Host", "fitness-calculator.p.rapidapi.com")
+                .build();
             HttpResponse<String> response = HttpClient.newHttpClient()
                 .send(request, BodyHandlers.ofString());
             if (response.statusCode() != 200) {
@@ -259,7 +265,7 @@ public class FoodFitApp extends Application {
             if (goal.getValue().toString() == "Loss") {
                 return calorieResponse.data.goals.mildWeightLoss.calory.toString();
             } // if
-        } catch (IOException | InterruptedException e) { 
+        } catch (IOException | InterruptedException e) {
             System.err.println(e.getMessage());
         } // try
 
@@ -270,21 +276,24 @@ public class FoodFitApp extends Application {
     /**
      * Method that creates multiple string array
      * of potential recipes using spoonacular Recipe - Food -
-     *  Nutrition API. The array contains titles and nutrients 
-     * in the recipe that the user can decide to make. 
+     *  Nutrition API. The array contains titles and nutrients
+     * in the recipe that the user can decide to make.
      * Along with the url of the image of the recipe.
      */
     public void getRecipe() {
         try {
-            String maxCalories = URLEncoder.encode(Double.toString(Double.parseDouble(getCalorie()) / 4), StandardCharsets.UTF_8);
-            String minCalories = URLEncoder.encode(Double.toString(Double.parseDouble(getCalorie()) / 4 - 200), StandardCharsets.UTF_8);
-            String query = String.format("?minProtein=20&random=true&maxCalories=%s&maxFat=25&minCalories=%s&number=9", maxCalories, minCalories);
+            String maxCalories = URLEncoder.encode(Double.toString
+                (Double.parseDouble(getCalorie()) / 4), StandardCharsets.UTF_8);
+            String minCalories = URLEncoder.encode(Double.toString
+                (Double.parseDouble(getCalorie()) / 4 - 200), StandardCharsets.UTF_8);
+            String query = String.format("?minProtein=20&random=true&maxCalories"
+                + "=%s&maxFat=25&minCalories=%s&number=9", maxCalories, minCalories);
             uri = RECIPE_API + query;
             HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(uri))
-            .header("X-RapidAPI-Key", recipeKey)
-            .header("X-RapidAPI-Host", "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com")
-            .build();
+                .uri(URI.create(uri))
+                .header("X-RapidAPI-Key", recipeKey)
+                .header("X-RapidAPI-Host", "spoonacular-recipe-food-nutrition-v1.p.rapidapi.com")
+                .build();
             HttpResponse<String> response = HttpClient.newHttpClient()
                 .send(request, BodyHandlers.ofString());
             if (response.statusCode() != 200) {
@@ -295,11 +304,13 @@ public class FoodFitApp extends Application {
 
             for (int i = 0; i < recipeResponse.length; i++) {
             // Check if i is less than the length of the recipeList array
-                recipeList[i] = recipeResponse[i].title + "\n " + recipeResponse[i].calories + " calories\n " + recipeResponse[i].protein + " protein\n " + recipeResponse[i].fat + " fat\n " + recipeResponse[i].carbs + " carbs\n";
+                recipeList[i] = recipeResponse[i].title + "\n " + recipeResponse[i].calories
+                    + " calories\n " + recipeResponse[i].protein + " protein\n "
+                    + recipeResponse[i].fat + " fat\n " + recipeResponse[i].carbs + " carbs\n";
                 recipeImage[i] = recipeResponse[i].image;
                 System.out.println(recipeImage[i]);
             }
-        } catch (IOException | InterruptedException| ArrayIndexOutOfBoundsException e) { 
+        } catch (IOException | InterruptedException | ArrayIndexOutOfBoundsException e) {
             System.err.println(e.getMessage());
         } // try
         Runnable mod2 = () ->  {
@@ -331,7 +342,7 @@ public class FoodFitApp extends Application {
 
                 }
                 return null;
-            
+
             }
         };
 
@@ -355,33 +366,38 @@ public class FoodFitApp extends Application {
             imgViews[i].setImage(new Image(DEF_IMG));
             textFlows[i].setPrefWidth(150);
             textFlows[i].setPrefHeight(233);
-            textFlows[i].getChildren().add(new Text("Food options and nutriends will be shown here."));
-            
+            textFlows[i].getChildren().add(new Text("Recipe and nutritions will be shown here."));
 
-        } // for      
+
+        } // for
     } // set
 
     /** Method that updates the app to have images of the
-     * recipe and list out the some of the nutrition value 
+     * recipe and list out the some of the nutrition value
      * of the food.
     */
     public void setFood() {
         Runnable mod1 = () -> {
-            label1.setText("You can eat " + getCalorie() + " calories. Here are some food options you can eat to reach it.");
+            label1.setText("You can eat " + getCalorie()
+                + " calories. Here are some food options you can eat to reach it.");
 
             for (int i = 0; i < textFlows.length; i++) {
                 textFlows[i].setPrefWidth(150);
                 textFlows[i].setPrefHeight(233);
                 textFlows[i].getChildren().clear();
-                textFlows[i].getChildren().add(new Text(recipeList[i]));            
+                textFlows[i].getChildren().add(new Text(recipeList[i]));
                 imgViews[i].setFitWidth(150);
                 imgViews[i].setFitHeight(233);
                 imgViews[i].setImage(new Image(recipeImage[i]));
-            } // for  
-         }; // mod1
-         Platform.runLater(mod1);
+            } // for
+        }; // mod1
+        Platform.runLater(mod1);
     } //  setFood
 
+    /**
+     * Method that disable
+     * some buttons and textBoxes.
+     */
     public void disable() {
         searchButton.setDisable(true);
         ageBox.setDisable(true);
@@ -392,6 +408,10 @@ public class FoodFitApp extends Application {
         goal.setDisable(true);
     } // disable
 
+    /**
+     * Method that enable
+     * some buttons and textBoxes.
+     */
     public void enable() {
         searchButton.setDisable(false);
         ageBox.setDisable(false);
@@ -414,4 +434,3 @@ public class FoodFitApp extends Application {
     }
 
 } // FoodFitApp
-

@@ -2,10 +2,10 @@ package cs1302.api;
 
 import javafx.application.Application;
 
-/**
- * Driver for the {@code GalleryApp} class.
+/** 
+ * Driver for the {@code FoodFitApp} class.
  */
-public class AppDriver {
+public class FoodFitAppDriver {
 
     /**
      * Main entry-point into the application.
@@ -13,7 +13,7 @@ public class AppDriver {
      */
     public static void main(String[] args) {
         try {
-            Application.launch(App.class, args);
+            Application.launch(FoodFitApp.class, args);
         } catch (UnsupportedOperationException e) {
             System.out.println(e);
             System.err.println("If this is a DISPLAY problem, then your X server connection");
@@ -22,4 +22,5 @@ public class AppDriver {
             System.exit(1);
         } // try
     } // main
-} //AppDriver
+
+} // FoodFitAppDriver

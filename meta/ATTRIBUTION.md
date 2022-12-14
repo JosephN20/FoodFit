@@ -16,3 +16,9 @@ authored by members of your project team.
   - dogchicken. 2012. "Cat Fighter Sprite Sheet"
   - https://opengameart.org/content/cat-fighter-sprite-sheet
   - CC-BY 3.0
+
+
+* grey
+  - `resources/grey.jpeg`
+  - Joseph Nguyen. 2022.
+
